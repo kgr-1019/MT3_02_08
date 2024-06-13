@@ -18,8 +18,18 @@ struct Sphere
 };
 
 
+// OBB(Oriented Bounding Box)
+struct OBB
+{
+	Vector3 center;// 中心点
+	Vector3 orientations[3];// 座標軸。正規化・直交必須
+	Vector3 size;// 座標軸方向の長さの半分。中心から面までの距離
+};
+
+
+
 // プロトタイプ宣言
-//void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
+void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 // X軸回転行列
 Matrix4x4 MakeRotateXMatrix(const Vector3& rotate);
@@ -275,6 +285,11 @@ Vector3 Transform(const Vector3& point, const Matrix4x4& transformMatrix)
 }
 
 
+// 衝突判定
+//bool IsCollision(const OBB& obb, const Sphere& sphere)
+//{
+//
+//}
 
 // Gridを表示する疑似コード
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
@@ -382,9 +397,9 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 			Matrix4x4 worldMatrixB = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, b);
 			Matrix4x4 worldMatrixC = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, c);
 			// WVPMatrix
-			Matrix4x4 worldViewProjectionMatrixA = MultiplyXYZ(worldMatrixA, viewProjectionMatrix);
-			Matrix4x4 worldViewProjectionMatrixB = MultiplyXYZ(worldMatrixB, viewProjectionMatrix);
-			Matrix4x4 worldViewProjectionMatrixC = MultiplyXYZ(worldMatrixC, viewProjectionMatrix);
+			Matrix4x4 worldViewProjectionMatrixA = Multiply(worldMatrixA, viewProjectionMatrix);
+			Matrix4x4 worldViewProjectionMatrixB = Multiply(worldMatrixB, viewProjectionMatrix);
+			Matrix4x4 worldViewProjectionMatrixC = Multiply(worldMatrixC, viewProjectionMatrix);
 			// NDC(正規化デバイス座標系)
 			Vector3 ndcVertexA = Transform(Vector3{}, worldViewProjectionMatrixA);
 			Vector3 ndcVertexB = Transform(Vector3{}, worldViewProjectionMatrixB);
@@ -396,11 +411,17 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 
 			// ab,acで線を引く
-			Novice::DrawLine((int)screenVerticesA.x, (int)screenVerticesA.y, (int)screenVerticesB.x, (int)screenVerticesB.y, color);
-			Novice::DrawLine((int)screenVerticesA.x, (int)screenVerticesA.y, (int)screenVerticesC.x, (int)screenVerticesC.y, color);
+			Novice::DrawLine((int)screenVerticesA.x, (int)screenVerticesA.y, (int)screenVerticesB.x, (int)screenVerticesB.y, WHITE);
+			Novice::DrawLine((int)screenVerticesA.x, (int)screenVerticesA.y, (int)screenVerticesC.x, (int)screenVerticesC.y, WHITE);
 		}
 	}
 }
+
+// OBBを描画するコード
+//void DrawOBB(const OBB& obb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
+//{
+//
+//}
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -418,6 +439,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f},
 		0.5f,
 	};
+
+	Vector3 rotate{ 0.0f,0.0f,0.0f };
+
+	OBB obb{
+		.center{-1.0f,0.0f,0.0f},
+		.orientations =
+		{{1.0f,0.0f,0.0f},
+		{0.0f,1.0f,0.0f},
+		{0.0f,0.0f,1.0f}},
+		.size{0.5f,0.5f,0.5f}
+	};
+
 
 	// 画面サイズ
 	float kWindowsWidth = 1280.0f;
